@@ -1,0 +1,93 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath,amssymb}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\sd}{\mathrm{sd}}
+\newcommand{\Real}{\mathbb R}
+
+
+\title{Average stability of Gaussian elimination revisited}
+\author{David I. Ketcheson}
+
+\begin{document}
+
+\maketitle
+
+\abstract{
+    We re-examine the model of Gaussian elimination introduced by Trefethen and Schreiber,
+    in which a certain {\em ad hoc} assumption reduced the average-case instability from
+    exponential to sublinear.  We justify the assumption made there by a careful
+    examination of the model.
+}
+
+\section{Gaussian elimination: a row-wise perspective}
+Let $A\in\Real^{n\times n}$ with independent, standard normal distributed
+entries.  Without loss of generality, we suppose that the rows of $A$ have
+already been permuted as dictated by Gaussian elimination with partial
+pivoting; this assumption merely makes the notation simpler.  Let $A_j$
+denote row $j$ of $A$ and let $U_j$ denote row $j$ of $U$.  Then the rows
+of $U$ are generated recursively by
+\begin{align} \label{A_rows}
+\begin{aligned}
+U_1 & = A_1 \\
+U_j & = A_j - \sum_{k=1}^{j-1} l_{jk} U_k  = A_j - \sum_{k=1}^{j-1} m_{jk} A_k & 1 < j \le n.
+\end{aligned}
+\end{align}
+Here $l_{jk}$ are the entries of $L$ and $m_{jk}$ are implicitly defined functions
+of the $l_{jk}$.  Our goal is to determine the
+expected standard deviation of the entries of $U_j$ (it is immediately clear that they
+have mean zero).  We have
+\begin{align}
+\begin{aligned}
+\Var(U_j) & = \Var(A_j) + \sum_{k=1}^{j-1} \Var(m_{jk} A_k) \\
+          & = 1+ \sum_{k=1}^{j-1} m_{jk}^2 \Var(A_k) \\
+          & = 1 + \sum_{k=1}^{j-1} m_{jk}^2.
+\end{aligned}
+\end{align}
+The key here is to recognize that for each $j,k$, $m_{jk}$ is
+a single value and not a set of $N-k+1$ normally distributed values.
+Thus
+\begin{align} \label{expected_sd}
+\E[\sd(U_j)] & = \E\left[\sqrt{1+\sum_{k=1}^{j-1} m_{jk}^2}\right].
+\end{align}
+Again, the $m_{jk}$ depend on the multipliers $l_{jk}$.  Distributions
+for the latter are derived in \cite[Section 4]{trefethen1990}; for our
+purposes we can approximate them by normal distributions with the
+standard deviations $\mu_k$ derived in \cite{trefethen1990}.
+We note in passing that they actually differ in an important way from being 
+normal: their tails are chopped at $\pm 1$, which may be important
+when studying the probability of occurrence of large growth factors.
+
+Clearly we have $\E[\sd(U_1)]=1$.  The second row of $U$ is (by \eqref{A_rows})
+\begin{align}
+U_2 & = A_2 - l_{21} A_1.
+\end{align}
+By \eqref{expected_sd} we have
+\begin{align}
+\E[\sd(U_2)] & = \E[\sqrt{1+l_{21}^2}].
+\end{align}
+According to our assumptions, $(l_{21}/\mu_1)^2$ follows a $\chi^2$
+distribution with one degree of freedom.  So
+\begin{align}
+\E[\sd(U_2)] & = \E\left[\sqrt{1+\mu_1^2\chi_1^2}\right].
+\end{align}
+
+
+\section{Distinctions between certain similar random processes}
+Consider the following two random processes:
+\begin{enumerate}
+    \item Select $N$ i.i.d. unit normal values $a_j$.  Select $N$ i.i.d.
+            unit normal values $b_j$.  Let $c_j=a_j+b_j$.
+
+    \item Select $N$ i.i.d. unit normal values $a_j$.  Select 1
+            unit normal value $b$.  Let $d_j=a_j+b$.
+\end{enumerate}
+What is the expected variance of the sets $c,d$ as $N\to\infty$?
+For $c$ it is 2, while for $d$ it is clearly one.  We have
+\begin{align}
+\E[\Var(d)] = \E[\Var(a+b)] = \E[\Var(a)+\Var(b)],
+\end{align}
+and in the first instance $\Var(b)=1$ while in the second $\Var(b)=0$.
+
+\end{document}
