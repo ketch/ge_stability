@@ -5,6 +5,7 @@
 \newcommand{\E}{\mathrm{E}}
 \newcommand{\sd}{\mathrm{sd}}
 \newcommand{\Real}{\mathbb R}
+\DeclareMathOperator\erf{erf}
 
 
 \title{Average stability of Gaussian elimination revisited}
@@ -21,12 +22,102 @@
     examination of the model.
 }
 
-\section{Gaussian elimination: a row-wise perspective}
-Let $A\in\Real^{n\times n}$ with independent, standard normal distributed
-entries.  Without loss of generality, we suppose that the rows of $A$ have
-already been permuted as dictated by Gaussian elimination with partial
-pivoting; this assumption merely makes the notation simpler.  Let $A_j$
-denote row $j$ of $A$ and let $U_j$ denote row $j$ of $U$.  Then the rows
+\section{Averaged Gaussian elimination: the Trefethen-Schreiber model}
+In this section we review the model proposed by Trefethen and Schrieber,
+hereafter referred to as TS.
+Let $A\in\Real^{n\times n}$ with independent, identically distributed
+entries with standard deviation $\sigma_A$.  
+Let 
+$$\sigma_k = \left<(a_{ij}^{(k)})^2 \right>^{1/2}$$
+denote the standard deviation of the elements of the bottom-right $k\times k$
+part of $A^{(k)}$ and 
+$$\mu_k = \left<(\hat{a}_{ik}^{(k)}/\hat{a}_{kk}^{(k)})^2 \right>^{1/2}$$
+denote the standard deviation of the multipliers $l_{jk}$ in column $k$ (for $k<j\le n$.
+
+The TS approximation for $\mu_k$ is
+\begin{align}
+\mu_k^2 \approx \frac{1}{W(m)^2} \left(1-\frac{\sqrt{2/\pi}W(m)e^{-W(m)^2/2}}{\erf(W(m)/\sqrt{2}}\right),
+\end{align}
+where (for partial pivoting) $m=n+1-k$ and
+$$W(m) \approx \alpha\left(1-\frac{2\log\alpha}{1+\alpha^2}\right)^2$$
+with $\alpha = \sqrt{2\log(m\sqrt{2/\pi})}$.
+
+As for the elements $a_{ij}^{(k)}$, in the TS model they are assumed to be
+normally distributed with mean zero, based on convincing numerical evidence.
+Only the standard deviation $\sigma_k$ depends on $k$.  Since row $k$ of $U$
+corresponds to a row from $A_k$, then if we assume that each row follows the
+same distribution (this is not clear), it remains only to determine the values
+$\sigma_k$ in order to estimate the whole distribution of entries of $U$.
+
+As noted in \cite[Section 5]{trefethen1990}, the $k$th elimination step is
+\begin{align} \label{step_k}
+    a_{ij}^{(k+1)} & := \hat{a}_{ij}^{(k)} - \frac{\hat{a}_{ik}^{(k)}}{\hat{a}_{kk}^{(k)}} \hat{a}_{kj}
+        & (k<i, j\le n).
+\end{align}
+Since $\hat{a}_{ij}^k$ and $\hat{a}_{kj}$ have variance $\sigma_k^2$, while the
+multiplier $\hat{a}_{ik}^{(k)}/\hat{a}_{kk}^{(k)}$ has variance $\mu_k^2$,
+assuming they are all independent gives \cite[Equation (5.3)]{trefethen1990}:
+\begin{align} \label{wrong_model}
+    \sigma_{k+1}^2 = \hat{\sigma}_k^2 + \mu_k^2 \hat{\sigma}_k^2.
+\end{align}
+This leads to a prediction of exponential growth of the standard deviation $\sigma_k$
+with $k$, and consequently to a prediction of exponentially large average growth factors.
+In TS, the authors introduce the alternative formula
+\begin{align} \label{adhoc}
+    \sigma_{k+1}^2 = \hat{\sigma}_k^2 + \mu_k^2 \hat{\sigma}_1^2,
+\end{align}
+which predicts non-exponential growth of $\sigma_k$ with $k$.  
+From a practical point of view, this substitution is the crucial part of the whole model, yet
+equation \eqref{adhoc} is not rigorously justified; the authors only suggest
+that it has something to do with dependencies among the values of the elements and
+multipliers.
+
+\section{Analysis of the dependence of $\sigma_k$ on $k$}
+In this section we show why \eqref{wrong_model} is not a correct model
+for the growth of $\sigma_k$.  
+Let us write \eqref{step_k} in terms of rows:
+\begin{align}
+A_j^{(k+1)} := \hat{A}_j^{(k)} - l_{ik} \hat{A}_k.
+\end{align}
+Observe that $\hat{A}_j^{(k)}$ and $\hat{A}_k^{(k)}$ are vectors with $m=n-k+1$
+non-zero elements, while $l_{ik}$ is a scalar.  Thus we can model \eqref{step_k}
+by the following random process:
+
+\begin{quote}
+Let $x_j$ and $y_j$, $1\le j \le m$ be i.i.d. values from ${\mathcal N}(0,\sigma^2_k)$.
+Let $c$ be a value from ${\mathcal N}(0,\mu^2_k)$.  Set $z_j = x_j + cy_j$.
+\end{quote}
+
+On the other hand, the statistics that lead to \eqref{wrong_model} are based on the
+distribution of $z_j$ obtained by the following process:
+\begin{quote}
+Let $x_j$ and $y_j$, $1\le j \le m$ be i.i.d. values from ${\mathcal N}(0,\sigma^2_k)$.
+Let $c_j$, $1\le j \le m$ be i.i.d. values from ${\mathcal N}(0,\mu^2_k)$.  Set $z_j = x_j + c_j y_j$.
+\end{quote}
+
+The values $z_j$ resulting from these two processes have different expected variances when $m>1$,
+as can easily be confirmed by simple experiments.  For a more obvious example, consider
+the following two processes:
+\begin{enumerate}
+    \item Select $N$ i.i.d. unit normal values $a_j$.  Select $N$ i.i.d.
+            unit normal values $b_j$.  Let $c_j=a_j+b_j$.
+
+    \item Select $N$ i.i.d. unit normal values $a_j$.  Select 1
+            unit normal value $b$.  Let $d_j=a_j+b$.
+\end{enumerate}
+What is the expected variance of the sets $c,d$ as $N\to\infty$?
+Elementary reasoning indicates that for $c$ it is 2, while for $d$ it is 1.  We have
+\begin{align}
+\E[\Var(d)] = \E[\Var(a+b)] = \E[\Var(a)+\Var(b)],
+\end{align}
+and in the first instance $\Var(b)=1$ while in the second $\Var(b)=0$.
+
+
+
+
+Let us consider the process of Gaussian 
+elimination from a row-wise perspective.  
+Let $A_j$ denote row $j$ of $PA$ and let $U_j$ denote row $j$ of $U$.  Then the rows
 of $U$ are generated recursively by
 \begin{align} \label{A_rows}
 \begin{aligned}
@@ -34,7 +125,8 @@ U_1 & = A_1 \\
 U_j & = A_j - \sum_{k=1}^{j-1} l_{jk} U_k  = A_j - \sum_{k=1}^{j-1} m_{jk} A_k & 1 < j \le n.
 \end{aligned}
 \end{align}
-Here $l_{jk}$ are the entries of $L$ and $m_{jk}$ are implicitly defined functions
+Here $l_{jk}=\hat{a}_{jk}^{(k)}/\hat{a}_{kk}^{(k)}$ are the multipliers and
+$m_{jk}$ are implicitly defined functions
 of the $l_{jk}$.  Our goal is to determine the
 expected standard deviation of the entries of $U_j$ (it is immediately clear that they
 have mean zero).  We have
@@ -73,21 +165,5 @@ distribution with one degree of freedom.  So
 \E[\sd(U_2)] & = \E\left[\sqrt{1+\mu_1^2\chi_1^2}\right].
 \end{align}
 
-
-\section{Distinctions between certain similar random processes}
-Consider the following two random processes:
-\begin{enumerate}
-    \item Select $N$ i.i.d. unit normal values $a_j$.  Select $N$ i.i.d.
-            unit normal values $b_j$.  Let $c_j=a_j+b_j$.
-
-    \item Select $N$ i.i.d. unit normal values $a_j$.  Select 1
-            unit normal value $b$.  Let $d_j=a_j+b$.
-\end{enumerate}
-What is the expected variance of the sets $c,d$ as $N\to\infty$?
-For $c$ it is 2, while for $d$ it is clearly one.  We have
-\begin{align}
-\E[\Var(d)] = \E[\Var(a+b)] = \E[\Var(a)+\Var(b)],
-\end{align}
-and in the first instance $\Var(b)=1$ while in the second $\Var(b)=0$.
 
 \end{document}

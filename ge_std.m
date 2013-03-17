@@ -5,8 +5,8 @@ clear all;
 close all;
 tic
 N = 256;
-m = 10;
-for ii = 1:m  % conduct experiment m times
+M = 10;
+for ii = 1:M  % conduct experiment M times
 A = randn(N);
 pred(1) = 1;
 pred2(1) = 1;
@@ -16,8 +16,6 @@ for k = 1:N-1
 
     m = N+1-k;
 
-    %mu2(k) = 0.5/log(m*sqrt(2/pi));
-    
     alpha = sqrt(2*log(m*sqrt(2/pi)));
     W = alpha*sqrt(1-2*log(alpha)/(1+alpha^2));
     mu2(k) = 1/W^2 * (1-(sqrt(2/pi)*W*exp(-W^2/2))/(erf(W/sqrt(2))));
